@@ -39,7 +39,7 @@ void setup() {
   mcp2515.setNormalMode();
 
   // Attach interupt
-  attachInterupt(CAN_INT, printMessage, FALLING)
+  attachInterupt(digitalPinToInterrupt(CAN_INT), printMessage, FALLING)
   
   // Print header
   Serial.println("CAN Injector");
