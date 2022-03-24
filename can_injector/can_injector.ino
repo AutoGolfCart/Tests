@@ -38,8 +38,8 @@ void setup() {
   mcp2515.setBitrate(CAN_125KBPS);
   mcp2515.setNormalMode();
 
-  // Attach interupt
-  attachInterupt(digitalPinToInterrupt(CAN_INT), printMessage, FALLING)
+  // Attach interrupt
+  attachInterrupt(digitalPinToInterrupt(CAN_INT), printMessage, FALLING)
   
   // Print header
   Serial.println("CAN Injector");
