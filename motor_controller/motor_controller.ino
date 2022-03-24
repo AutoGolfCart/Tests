@@ -24,22 +24,22 @@
 
 void setup() {
     // Debug
-    Serial.begin(9600);
+    Serial.begin(115200);
 
     // Set pinmode
-    Serial.write("Setting outputs");
+    Serial.println("Setting outputs");
     pinMode(CTRL_ENABLE, OUTPUT);
     pinMode(CTRL_L_PWM, OUTPUT);
     pinMode(CTRL_R_PWM, OUTPUT);
 
     // Set all to low
-    Serial.write("Writing all low");
+    Serial.println("Writing all low");
     digitalWrite(CTRL_ENABLE, LOW);
     digitalWrite(CTRL_L_PWM, LOW);
     digitalWrite(CTRL_R_PWM, LOW);
 
     // Enable
-    Serial.write("Enabling motor controller");
+    Serial.println("Enabling motor controller");
     digitalWrite(CTRL_ENABLE, HIGH);
 
 }
@@ -51,22 +51,22 @@ void setup() {
 
 void loop() {
     // Forwards
-    Serial.write("Forward half power");
+    Serial.println("Forward half power");
     analogWrite(CTRL_R_PWM, 128);
     delay(2500);
 
     // Stop
-    Serial.write("Stopping");
+    Serial.println("Stopping");
     analogWrite(CTRL_R_PWM, 0);
     delay(500);
 
     // Backwards
-    Serial.write("Backward half power");
+    Serial.println("Backward half power");
     analogWrite(CTRL_L_PWM, 128);
     delay(2500);
 
     // Stop
-    Serial.write("Stopping");
+    Serial.println("Stopping");
     analogWrite(CTRL_L_PWM, 0);
     delay(500);
     
