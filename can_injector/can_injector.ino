@@ -138,7 +138,7 @@ void sendCANMessage(uint32_t id, uint8_t m_data[8]) {
     Serial.print(") ");
 
     // Print data
-    for (int i = 0; i < can_msg_out.dlc; i++) {
+    for (int i = 0; i < can_msg_out.can_dlc; i++) {
         Serial.print(can_msg_out.data[i], HEX);
         Serial.print(" ");
 
