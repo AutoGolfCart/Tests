@@ -1,3 +1,5 @@
+
+#include <SPI.h>
 #include <mcp2515.h>
 
 // Pins
@@ -44,7 +46,7 @@ void loop() {
 
     Serial.println();
     
-    int duty_cycle = (canMsg.data[6] << 8) | canMsg.data[7];
+    int duty_cycle = (canMsg.data[6] << 8);
     
     if (duty_cycle < 0) { duty_cycle = duty_cycle * -1; }
     if (duty_cycle > 255) { duty_cycle = 255; }
