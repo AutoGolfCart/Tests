@@ -49,20 +49,17 @@ void setup() {
 
 /** @brief Print out the received can frame*/
 void printMessage() {
-  // Start message
-  Serial.print("CAN-RX: (");
-  Serial.print(can_msg_out.can_id, HEX);
-  Serial.print(") ");
+  // Start log
+    Serial.print("CAN-RX: (" + String(can_msg_in.can_id) + ") ");
 
-  // Print data
-  for (int i = 0; i < can_msg_in.can_dlc; i++) {
-    Serial.print(can_msg_out.data[i], HEX);
-    Serial.print(" ");
+    // Print data
+    for (int i = 0; i < can_msg_in.can_dlc; i++) {
+        Serial.print(String(can_msg_in.data[i]) + " ");
 
-  }
+    }
 
-  // End Line
-  Serial.println();
+    // New Line
+    Serial.println();
 
 }
 
@@ -92,23 +89,32 @@ void adapterSendMessage(String drive_com_msg) {
     }
 
     // Get the ID
-    String str_id = drive_com_msg.substring(id_begin_index, id_end_index - 1);
-    byte id_buf[4];
-    str_id.toCharArray(id_buf, sizeof(id_buf));
-    uint32_t set_id = id_buf[0] | (id_buf[1] << 8) | (id_buf[2] << 16) | (id_buf[3] << 24);
+    char* str_id = drive_com_msg.substring(id_begin_index, id_end_index - 1).c_str();
+    char* ptr;
+    uint32_t set_id = strtoul(str_id, &ptr, 16);
 
     // Clear ID
-    drive_com_msg.replace(drive_com_msg.substring(0, id_end_index + 1), "");
-
-    // Clear Spaces
-    drive_com_msg.replace(" ", "");
+    drive_com_msg.replace(drive_com_msg.substring(0, id_end_index + 2), "");
 
     // Get data
-    uint8_t data_buf[8];
-    drive_com_msg.toCharArray(data_buf, sizeof(data_buf));
+    uint8_t data[8];
+    int count = 0;
+    
+    while (drive_com_msg.length() > 0) {
+        int index = drive_com_msg.indexOf(' ');
+        
+        if (index == -1) {
+            data[count++] = atoi(drive_com_msg.c_str());
+          
+        } else {
+            data[count++] = atoi(drive_com_msg.substring(0, index).c_str());
+            drive_com_msg = drive_com_msg.substring(index + 1);
+            
+        }
+    }
 
     // Send message
-    sendCANMessage(set_id, data_buf);
+    sendCANMessage(set_id, data);
 
 }
 
@@ -133,14 +139,11 @@ void sendCANMessage(uint32_t id, uint8_t m_data[8]) {
     }
 
     // Start log
-    Serial.print("CAN-TX: (");
-    Serial.print(can_msg_out.can_id, HEX);
-    Serial.print(") ");
+    Serial.print("CAN-TX: (" + String(can_msg_out.can_id) + ") ");
 
     // Print data
     for (int i = 0; i < can_msg_out.can_dlc; i++) {
-        Serial.print(can_msg_out.data[i], HEX);
-        Serial.print(" ");
+        Serial.print(String(can_msg_out.data[i]) + " ");
 
     }
 
