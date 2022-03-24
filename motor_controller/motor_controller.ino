@@ -40,7 +40,7 @@ void setup() {
 
     // Enable
     Serial.write("Enabling motor controller");
-    digitalWrite(CTLR_ENABLE, HIGH);
+    digitalWrite(CTRL_ENABLE, HIGH);
 
 }
 
