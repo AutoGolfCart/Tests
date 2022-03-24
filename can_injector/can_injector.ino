@@ -55,7 +55,7 @@ void printMessage() {
   Serial.print(") ");
 
   // Print data
-  for (int i = 0; i < can_msg_in.dlc; i++) {
+  for (int i = 0; i < can_msg_in.can_dlc; i++) {
     Serial.print(can_msg_out.data[i], HEX);
     Serial.print(" ");
 
