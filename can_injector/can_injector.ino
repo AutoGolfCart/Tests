@@ -20,6 +20,8 @@
 struct can_frame can_msg_in;
 struct can_frame can_msg_out;
 
+struct can_frame test_msg;
+
 // CAN Pins
 #define CAN_CS 10
 #define CAN_INT 2
@@ -28,28 +30,63 @@ struct can_frame can_msg_out;
 MCP2515 mcp2515(CAN_CS);
 uint8_t m_can_dlc = 8;
 
+
+
 /** @brief Arduino Setup */
 void setup() {
-  // Serial
-  Serial.begin(115200);
-  
-  // CAN Setup
-  mcp2515.reset();
-  mcp2515.setBitrate(CAN_125KBPS);
-  mcp2515.setNormalMode();
+    // Serial
+    Serial.begin(115200);
+    
+    // CAN Setup
+    mcp2515.reset();
+    mcp2515.setBitrate(CAN_125KBPS);
+    mcp2515.setNormalMode();
 
-  // Attach interrupt
-  attachInterrupt(digitalPinToInterrupt(CAN_INT), printMessage, FALLING);
-  
-  // Print header
-  Serial.println("CAN Injector");
-  Serial.println("Example Message: (0x000) 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00");
+    // Attach interrupt
+    attachInterrupt(digitalPinToInterrupt(CAN_INT), printMessage, FALLING);
+    
+    // Print header
+    Serial.println("CAN Injector");
+    Serial.println("Example Message: (0x000) 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00");
+
+    // test_msg.can_dlc = 8;
+    // test_msg.can_id = 4801;
+
+    // test_msg.data[0] = 1;
+    // test_msg.data[1] = 2;
+    // test_msg.data[2] = 3;
+    // test_msg.data[3] = 4;
+    // test_msg.data[4] = 5;
+    // test_msg.data[5] = 6;
+    // test_msg.data[6] = 7;
+    // test_msg.data[7] = 8;
+
+    // sendCANMessage(test_msg.can_id, test_msg.data);
+    
+
+    String drive_com_msg = "(4081) 10 1 12 1 255 0 0 0";
+    // Serial.println("MSG-TO-PARSE: " + drive_com_msg);
+
+    //Serial.println("Index of \'>\': " + String(drive_com_msg.indexOf(">")));
+    //Serial.println(drive_com_msg.substring(drive_com_msg.indexOf(">")+1));
+
+    // adapterSendMessage(drive_com_msg);
+
+}1
+
+/** @brief Arduino Loop */
+void loop() {
+    //Serial.println("Enter Message: ");
+    //adapterSendMessage(Serial.readString());
+
+    //adapterSendMessage("(4081) 10 1 12 1 255 0 0 0");
+    //delay(2000);
 
 }
 
 /** @brief Print out the received can frame*/
 void printMessage() {
-  // Start log
+    // Start log
     Serial.print("CAN-RX: (" + String(can_msg_in.can_id) + ") ");
 
     // Print data
@@ -63,13 +100,6 @@ void printMessage() {
 
 }
 
-/** @brief Arduino Loop */
-void loop() {
-  Serial.println("Enter Message: ");
-  adapterSendMessage(Serial.readString());
-  
-}
-
 /**
  * @brief Sends a message through the CAN Adapter
  * 
@@ -78,43 +108,56 @@ void loop() {
 
 void adapterSendMessage(String drive_com_msg) {
     // Get the ID indexes
-    int id_begin_index = drive_com_msg.indexOf("(");
-    int id_end_index = drive_com_msg.indexOf(")");
+    String id_msg = drive_com_msg.substring(0, drive_com_msg.indexOf(")") + 2);
+    id_msg.replace("(", "");
+    id_msg.replace(")", "");
+    id_msg.replace(" ", "");
 
-    // Check ID
-    if (id_begin_index == -1 || id_end_index == -1) {
-        Serial.println("Err: CAN message is missing ID");
-        return;
+    // Convert ID
+    const char *nptr = id_msg.c_str();
+    char *endptr;
+    uint32_t id = strtoul(nptr, &endptr, 10);
+
+    // Serial.print("ID: ");
+    // Serial.println(id, HEX);
+
+    // Split the data string
+    char string[128];
+    drive_com_msg.substring(drive_com_msg.indexOf(")") + 2).toCharArray(string, sizeof(string));
+    String data_points[8];
+
+    char *p;
+    char delimiter[] = " ";
+
+    int i = 0;
+    p = strtok(string, delimiter);
+
+    while(p && i < 8) {
+        data_points[i] = p;
+        p = strtok(NULL, delimiter);
+        ++i;
 
     }
 
-    // Get the ID
-    char* str_id = drive_com_msg.substring(id_begin_index, id_end_index - 1).c_str();
-    char* ptr;
-    uint32_t set_id = strtoul(str_id, &ptr, 16);
-
-    // Clear ID
-    drive_com_msg.replace(drive_com_msg.substring(0, id_end_index + 2), "");
-
-    // Get data
     uint8_t data[8];
-    int count = 0;
-    
-    while (drive_com_msg.length() > 0) {
-        int index = drive_com_msg.indexOf(' ');
+
+    for (i = 0; i < 8; ++i) {
+        data[i] = data_points[i].toInt();
         
-        if (index == -1) {
-            data[count++] = atoi(drive_com_msg.c_str());
-          
-        } else {
-            data[count++] = atoi(drive_com_msg.substring(0, index).c_str());
-            drive_com_msg = drive_com_msg.substring(index + 1);
-            
-        }
     }
+
+    // Serial.print("DATA: ");
+
+    // for (i = 0; i < 8; ++i) {
+    //     Serial.print(data[i], HEX);
+    //     Serial.print(", ");
+        
+    // }
+
+    // Serial.println();
 
     // Send message
-    sendCANMessage(set_id, data);
+    sendCANMessage(id, data);
 
 }
 
@@ -139,11 +182,14 @@ void sendCANMessage(uint32_t id, uint8_t m_data[8]) {
     }
 
     // Start log
-    Serial.print("CAN-TX: (" + String(can_msg_out.can_id) + ") ");
+    Serial.print("CAN-TX: (");
+    Serial.print(can_msg_out.can_id, HEX);
+    Serial.println(") ");
 
     // Print data
     for (int i = 0; i < can_msg_out.can_dlc; i++) {
-        Serial.print(String(can_msg_out.data[i]) + " ");
+        Serial.print(can_msg_out.data[i], HEX);
+        Serial.print(" ");
 
     }
 

@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:uno",
+    "port": "/dev/tty.usbmodem141101",
+    "programmer": "arduino:avrisp",
+    "sketch": "can_injector/can_injector.ino"
+}
