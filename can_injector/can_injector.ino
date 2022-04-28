@@ -72,7 +72,7 @@ void setup() {
 
     // adapterSendMessage(drive_com_msg);
 
-}1
+}
 
 /** @brief Arduino Loop */
 void loop() {
